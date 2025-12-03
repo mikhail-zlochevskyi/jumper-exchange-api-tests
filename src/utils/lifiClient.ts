@@ -137,6 +137,15 @@ export class LifiClient {
 
     return this.request.get(`${config.baseURL}/tools?${queryParams.toString()}`);
   }
+
+  async getToken(params: { chain: string; token: string }): Promise<APIResponse> {
+    const queryParams = new URLSearchParams({
+      chain: params.chain,
+      token: params.token,
+    });
+
+    return this.request.get(`${config.baseURL}/token?${queryParams.toString()}`);
+  }
 }
 
 

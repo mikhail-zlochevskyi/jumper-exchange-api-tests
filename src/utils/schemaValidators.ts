@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const TokenSchema = z.object({
+export const TokenSchema = z.object({
   address: z.string(),
   symbol: z.string(),
   decimals: z.number(),
@@ -164,5 +164,13 @@ export const ErrorResponseSchema = z.object({
 });
 
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+
+// Single token response (GET /v1/token) may include extra market data fields
+export const SingleTokenResponseSchema = TokenSchema.extend({
+  marketCapUSD: z.number().optional(),
+  volumeUSD24H: z.number().optional(),
+});
+
+export type SingleTokenResponse = z.infer<typeof SingleTokenResponseSchema>;
 
 
