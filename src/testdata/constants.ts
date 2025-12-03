@@ -1,0 +1,8 @@
+export const TEST_EVM_WALLET_ADDRESS =
+  process.env.TEST_EVM_WALLET_ADDRESS ||
+  '0x9ff4Bca95928eea05796e7d95D6A8272b1076c5C';
+
+export const TEST_SOL_WALLET_ADDRESS =
+  process.env.TEST_SOL_WALLET_ADDRESS ||
+  '2PhbrXvzFiYXVN3Jb4hzhHNXbY6CFnqPPyHW9ZxtXzYi';
+

@@ -1,0 +1,30 @@
+{
+  "name": "jumper-exchange-api-tests",
+  "version": "1.0.0",
+  "description": "Playwright API test suite for LI.FI blockchain API",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:performance": "playwright test tests/api/performance.spec.ts"
+  },
+  "keywords": [
+    "playwright",
+    "api-testing",
+    "typescript",
+    "blockchain",
+    "lifi"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3",
+    "zod": "^3.22.4"
+  }
+}
+
+
