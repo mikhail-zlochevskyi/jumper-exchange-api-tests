@@ -3,10 +3,11 @@
 ## 1. Scope & Objectives
 
 ### Scope
-This test plan covers API testing for the LI.FI blockchain bridge and exchange API, focusing on three primary endpoints:
+This test plan covers API testing for the LI.FI blockchain bridge and exchange API, focusing on four primary endpoints:
 - `GET /v1/quote` - Get quote for token swaps
 - `POST /v1/advanced/routes` - Get advanced routing options
 - `GET /v1/tools` - Get available bridges and exchanges
+- `GET /v1/token` - Fetch information about a token (token search and price retrieval)
 
 ### Objectives
 1. Validate functional correctness of all three endpoints
@@ -70,16 +71,34 @@ This test plan covers API testing for the LI.FI blockchain bridge and exchange A
 
 #### Happy Path Tests
 - ✅ Get all tools without parameters
-- ✅ Get tools filtered by chain
-- ✅ Get tools filtered by token
-- ✅ Get tools filtered by chain and token
-- ✅ Get tools for multiple chains (Ethereum, Polygon, Arbitrum)
+- ✅ Get tools filtered by chain IDs (array support)
+- ✅ Get tools for multiple EVM chains (Ethereum, Polygon, Arbitrum)
+- ✅ Get tools for Solana, Bitcoin, and SUI chains
 
 #### Validation Tests
 - ✅ Verify response status code (200)
 - ✅ Validate response contains bridges or exchanges
 - ✅ Verify array structures are correct
 - ✅ Test data consistency for same parameters
+- ✅ Validate bridge supportedChains structure
+- ✅ Validate exchange supportedChains structure
+
+### 3.4 GET /v1/token
+
+#### Happy Path Tests
+- ✅ Get token information for Solana (SOL)
+- ✅ Get token information for Bitcoin (BTC)
+- ✅ Get token information for SUI (SUI)
+- ✅ Get token information by symbol
+- ✅ Get token information by address
+
+#### Validation Tests
+- ✅ Verify response status code (200)
+- ✅ Validate token schema (address, symbol, decimals, chainId, name)
+- ✅ Verify priceUSD is present and valid (> 0)
+- ✅ Verify market data fields (marketCapUSD, volumeUSD24H) when available
+- ✅ Verify coinKey matches expected value
+- ✅ Verify logoURI format
 
 ## 4. Non-Functional Tests
 
@@ -140,21 +159,26 @@ This test plan covers API testing for the LI.FI blockchain bridge and exchange A
 
 ### Risks
 1. **API Rate Limiting**: May affect concurrent performance tests
-   - *Mitigation*: Monitor for 429 responses, adjust concurrency if needed
+   - *Mitigation*: Use API key authentication, monitor for 429 responses, adjust concurrency if needed
+   - *Note*: Tests handle 429 responses gracefully, treating them as acceptable outcomes
 2. **Network Instability**: External API dependencies
    - *Mitigation*: Retry logic, timeout handling
 3. **API Changes**: Schema or endpoint changes during testing
    - *Mitigation*: Versioned API, schema validation
 4. **Token Availability**: Some tokens may not be available for swapping
    - *Mitigation*: Use well-known token pairs, handle 404/empty responses
+5. **Multi-Chain Support**: Different chains may have varying API support
+   - *Mitigation*: Test with well-documented chains (EVM, Solana, Bitcoin, SUI), handle chain-specific errors
 
 ### Assumptions
 1. API base URL: `https://li.quest/v1` (configurable via env)
 2. API follows RESTful conventions
 3. Error responses follow consistent schema
 4. Token addresses are case-insensitive
-5. Chain IDs are numeric strings or numbers
-6. Amounts are provided as strings in smallest unit (wei, etc.)
+5. Chain IDs are numeric strings or numbers (or chain keys like "SOL", "BTC", "SUI")
+6. Amounts are provided as strings in smallest unit (wei, lamports, satoshis, etc.)
+7. API key authentication is optional but recommended for higher rate limits
+8. Test wallet addresses are public and safe to include in repository
 
 ## 7. Prioritization
 
@@ -180,6 +204,8 @@ This test plan covers API testing for the LI.FI blockchain bridge and exchange A
 - ✅ Extended performance testing (20+ concurrent)
 - ✅ Mixed endpoint performance
 - ✅ Data consistency checks
+- ✅ Multi-chain token information retrieval (SOL, BTC, SUI)
+- ✅ Token price and market data validation
 
 ## 8. Test Execution
 
@@ -201,6 +227,7 @@ npm test
 npx playwright test tests/api/quote.spec.ts
 npx playwright test tests/api/advancedRoutes.spec.ts
 npx playwright test tests/api/tools.spec.ts
+npx playwright test tests/api/token.spec.ts
 
 # Run performance tests
 npm run test:performance
@@ -212,6 +239,12 @@ npm run test:report
 ### Environment Configuration
 - `LIFI_BASE_URL`: API base URL (default: https://li.quest/v1)
 - `API_TIMEOUT`: Request timeout in ms (default: 30000)
+- `LIFI_API_KEY`: API authentication key (required for higher rate limits)
+  - Set as environment variable: `export LIFI_API_KEY="your-key-here"`
+  - Never commit API keys to the repository
+  - For CI/CD: Set as GitHub repository secret
+- `TEST_EVM_WALLET_ADDRESS`: EVM wallet address for testing (default: 0x9ff4Bca95928eea05796e7d95D6A8272b1076c5C)
+- `TEST_SOL_WALLET_ADDRESS`: Solana wallet address for testing (default: 2PhbrXvzFiYXVN3Jb4hzhHNXbY6CFnqPPyHW9ZxtXzYi)
 
 ## 9. Success Criteria
 
@@ -236,9 +269,11 @@ npm run test:report
 ## 10. Future Improvements
 
 1. **Test Coverage Expansion**
-   - Additional token pairs
-   - More chain combinations
+   - Additional token pairs across all supported chains
+   - More chain combinations (including cross-chain between non-EVM chains)
    - Additional optional parameters
+   - Token search functionality with filters
+   - Bulk token information retrieval
 
 2. **Performance Enhancements**
    - Load testing with higher concurrency
